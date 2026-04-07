@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magnific Expert — ICHKA Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --border2: #333;
+    --text: #f0ede6;
+    --muted: #888;
+    --faint: #444;
+    --gold: #f5a623;
+    --gold-dim: #a06910;
+    --danger: #c0392b;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  header { margin-bottom: 2.5rem; }
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: var(--text);
+  }
+  header h1 span { color: var(--gold); }
+  header p {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+  }
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    border: 0.5px solid var(--gold-dim);
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-top: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  /* Upload */
+  .upload-zone {
+    border: 1px dashed var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 3rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: var(--surface);
+  }
+  .upload-zone:hover, .upload-zone.drag {
+    border-color: var(--gold);
+    background: var(--surface2);
+  }
+  .upload-icon {
+    width: 48px; height: 48px;
+    margin: 0 auto 14px;
+    border: 1px solid var(--border2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    font-size: 20px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .upload-zone:hover .upload-icon, .upload-zone.drag .upload-icon {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .upload-zone p { font-size: 14px; color: var(--text); }
+  .upload-zone span { font-size: 12px; color: var(--muted); margin-top: 4px; display: block; }
+  #file-input { display: none; }
+
+  /* Preview */
+  .preview-wrap { display: none; margin-bottom: 1rem; position: relative; }
+  .preview-wrap img {
+    width: 100%;
+    max-height: 320px;
+    object-fit: contain;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .remove-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .remove-btn:hover { color: var(--text); border-color: var(--faint); }
+
+  /* Button */
+  .analyze-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--gold);
+    color: #0e0e0e;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: opacity 0.15s, transform 0.1s;
+    display: none;
+    margin-top: 1rem;
+  }
+  .analyze-btn:hover { opacity: 0.88; }
+  .analyze-btn:active { transform: scale(0.99); }
+  .analyze-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Loader */
+  .loader { display: none; padding: 2rem; text-align: center; }
+  .loader-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; }
+  .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,100%{opacity:0.2;transform:scale(0.7)} 50%{opacity:1;transform:scale(1)} }
+  .loader p { font-size: 13px; color: var(--muted); }
+
+  /* Result */
+  .result-card {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-top: 1.5rem;
+    animation: fadeUp 0.3s ease;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  .result-section {
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .result-section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .analysis-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* Params table */
+  .params-table { width: 100%; border-collapse: collapse; }
+  .params-table tr { border-bottom: 1px solid var(--border); }
+  .params-table tr:last-child { border-bottom: none; }
+  .params-table td { padding: 8px 0; vertical-align: top; font-size: 13px; }
+  .params-table td:first-child {
+    color: var(--muted);
+    width: 36%;
+    font-weight: 300;
+  }
+  .params-table td:nth-child(2) {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    width: 22%;
+    font-weight: 500;
+  }
+  .params-table td:nth-child(3) {
+    color: var(--muted);
+    padding-left: 14px;
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  /* Prompt box */
+  .prompt-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.6;
+    word-break: break-word;
+  }
+  .copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    background: none;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 6px 12px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--faint); }
+  .copy-btn.copied { color: var(--gold); border-color: var(--gold-dim); }
+
+  /* Warnings */
+  .warning-box {
+    font-size: 13px;
+    color: #e8b86d;
+    line-height: 1.6;
+    font-weight: 300;
+    padding: 10px 12px;
+    background: rgba(245, 166, 35, 0.06);
+    border-radius: var(--radius);
+    border-left: 2px solid var(--gold-dim);
+  }
+
+  /* Error */
+  .error-box {
+    font-size: 13px;
+    color: #e87d7d;
+    padding: 10px 12px;
+    background: rgba(192, 57, 43, 0.08);
+    border-radius: var(--radius);
+    border-left: 2px solid var(--danger);
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 11px;
+    color: var(--faint);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.06em;
+  }
+  footer a { color: var(--faint); text-decoration: none; }
+  footer a:hover { color: var(--gold); }
+
+  /* API Key prompt */
+  .api-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .api-section label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; font-family: 'DM Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; font-size: 10px; }
+  .api-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 9px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+    letter-spacing: 0.04em;
+  }
+  .api-input:focus { border-color: var(--gold-dim); }
+  .api-hint { font-size: 11px; color: var(--faint); margin-top: 5px; }
+  .api-hint a { color: var(--gold-dim); text-decoration: none; }
+  .api-hint a:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>MAGNIFIC <span>EXPERT</span></h1>
+    <p>Upscaling Freepik — paramètres optimaux générés par IA</p>
+    <span class="badge">ICHKA STUDIO × MAGNIFIC V7</span>
+  </header>
+
+  <!-- API Key -->
+  <div class="api-section" id="api-section">
+    <label>Clé API Anthropic</label>
+    <input type="password" class="api-input" id="api-key-input" placeholder="sk-ant-api03-..." autocomplete="off">
+    <p class="api-hint">Stockée localement, jamais envoyée ailleurs. <a href="https://console.anthropic.com/settings/keys" target="_blank">Obtenir une clé →</a></p>
+  </div>
+
+  <!-- Upload -->
+  <div class="upload-zone" id="drop-zone">
+    <div class="upload-icon">↑</div>
+    <p>Glisse ton image ici</p>
+    <span>ou clique pour sélectionner — JPG, PNG, WEBP</span>
+    <input type="file" id="file-input" accept="image/*">
+  </div>
+
+  <!-- Preview -->
+  <div class="preview-wrap" id="preview-wrap">
+    <img id="preview-img" src="" alt="preview">
+    <button class="remove-btn" id="remove-btn">✕</button>
+  </div>
+
+  <button class="analyze-btn" id="analyze-btn" disabled>Analyser l'image →</button>
+
+  <!-- Loader -->
+  <div class="loader" id="loader">
+    <div class="loader-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <p>Analyse en cours…</p>
+  </div>
+
+  <!-- Result -->
+  <div class="result-card" id="result-card">
+    <div class="result-section">
+      <div class="section-label">Analyse</div>
+      <div class="analysis-text" id="res-analysis"></div>
+    </div>
+    <div class="result-section">
+      <div class="section-label">Paramètres recommandés</div>
+      <table class="params-table" id="res-params"></table>
+    </div>
+    <div class="result-section" id="prompt-section">
+      <div class="section-label">Prompt à copier</div>
+      <div class="prompt-box" id="res-prompt"></div>
+      <button class="copy-btn" id="copy-btn">Copier le prompt</button>
+    </div>
+    <div class="result-section">
+      <div class="section-label">Points d'attention</div>
+      <div class="warning-box" id="res-warnings"></div>
+    </div>
+  </div>
+
+  <footer>
+    <a href="https://x.com/IchkaStudio" target="_blank">x.com/IchkaStudio</a> &nbsp;·&nbsp; Magnific V7 Knowledge Base
+  </footer>
+
+</div>
+
+<script>
+const KNOWLEDGE = `MAGNIFIC AI — GUIDE V7
+
+MODES:
+- Creative: tous sliders disponibles, prompt actif si Creativity >= -1. Adapté art digital, illustrations, 3D, fantasy.
+- Precision: PAS de prompt, PAS de poids. Sharpness et Grain uniquement. Pour photos réalistes, portraits, produits.
+
+RÈGLE CRÉATIVITÉ (absolue):
+- -3 à -1 : DÉFAUT finition. Préserve l'image.
+- 0 à +2 : Remix, seulement si explicitement demandé.
+- +3 à +10 : Artistique exceptionnel.
+
+SLIDERS (-10 à +10):
+HDR: -3/0=doux | +1=standard | +2/+3=textures | +4/+5=RISQUE artefacts
+Ressemblance: -3/-1=liberté | 0=équilibre | +1/+3=préserve identité | +4/+5=RISQUE blotches sur JPEG
+Fractalité: -3/-1=lisse | 0/+1=équilibre | +2/+3=micro-détails | +4/+5=RISQUE bandes verticales
+
+ENGINES: Sparkle=photos/portraits/cinématique | Illusio=illustrations/art/peintures | Sharpy=produits/logos/net | Automatic=contenu ambigu
+
+PRESETS: Portrait(doux)=headshots beauté | Portrait(intense)=masculin texture | Art et Illustrations | Nature et Paysages | Films et Photographie | Rendus 3D | Standard Ultra=polyvalent
+
+RECETTES PAR TYPE (finition défaut):
+- Portrait beauté: Creative | Sparkle | Portrait(doux) | Cr:-2 | HDR:+1 | Res:+2 | Frac:0 | "(sharp eyes:1.3), (natural skin texture:1.2), soft lighting, no text"
+- Portrait masculin: Creative | Sharpy | Portrait(intense) | Cr:-2 | HDR:+2 | Res:+2 | Frac:-1 | "(sharp facial features:1.3), (detailed skin texture:1.2), strong lighting, no text"
+- Paysage/nature: Creative | Sparkle | Nature et Paysages | Cr:-1 | HDR:+2 | Res:+1 | Frac:+1 | "(detailed vegetation:1.3), (sharp horizon:1.2), realistic sky, natural lighting, no text"
+- Illustration/art: Creative | Illusio | Art et Illustrations | Cr:-1 | HDR:+1 | Res:+2 | Frac:0 | "(clean lines:1.3), (vibrant colors:1.2), detailed brushstrokes, no text"
+- Produit/e-commerce: Creative | Sharpy | Standard Ultra | Cr:-2 | HDR:+2 | Res:+2 | Frac:-1 | "(sharp product edges:1.3), (detailed textures:1.2), clean background, studio lighting, no text"
+- Hypercar/hard-surface: Creative | Sparkle | Rendus 3D | Cr:-2 | HDR:+2 | Res:+2 | Frac:-2 | "(crisp reflections:1.2), (detailed wheel rims:1.2), sharp panel lines, studio lighting, no text, no logo"
+- Rendu 3D/archi: Creative | Sharpy | Rendus 3D | Cr:-2 | HDR:+1 | Res:+2 | Frac:-1 | "(clean geometry:1.2), (refined material details:1.2), sharp edges, no noise, no text"
+- Cinématique/film: Creative | Sparkle | Films et Photographie | Cr:-1 | HDR:+2 | Res:+2 | Frac:0 | "(cinematic depth:1.2), (rich color grading:1.2), dramatic lighting, film grain, no text"
+- Photo dégradée/bruit: Precision v2 Photo Denoiser | preset Balanced | pas de prompt
+- Asset jeux vidéo: Creative | Illusio | Standard Ultra | Cr:-1 | HDR:+2 | Res:+2 | Frac:+1 | "(sharp texture details:1.3), (clean edges:1.2), vibrant colors, no text"
+
+SÉCURITÉ ABSOLUE:
+- Jamais HDR>3 + Creativity>3 simultanément
+- JPEG dégradé: Ressemblance <= +2
+- Fractalité >= +4: signaler risque bandes verticales
+- Poids prompt: max 1.3 recommandé, jamais > 1.4
+- En Precision: aucun prompt, aucun poids
+- Scale Factor: toujours 2x maximum
+- Images avec texte/logos: Creativity <= -3, Ressemblance >= +2`;
+
+const SYSTEM = `Tu es Magnific Expert, spécialiste de l'upscaling Magnific AI sur Freepik. Tu analyses des images et prescris des paramètres exacts. Base de connaissances: ${KNOWLEDGE}
+
+FORMAT DE RÉPONSE — JSON strict uniquement, aucun texte autour:
+{
+  "analysis": "2 phrases: type d'image, qualité, problèmes détectés",
+  "params": [
+    {"name": "Scale Factor", "value": "2x", "reason": "maximum recommandé"},
+    {"name": "Mode", "value": "...", "reason": "..."},
+    {"name": "Engine", "value": "...", "reason": "..."},
+    {"name": "Optimized for", "value": "...", "reason": "..."},
+    {"name": "Creativity", "value": "...", "reason": "..."},
+    {"name": "HDR", "value": "...", "reason": "..."},
+    {"name": "Resemblance", "value": "...", "reason": "..."},
+    {"name": "Fractality", "value": "...", "reason": "..."}
+  ],
+  "prompt": "prompt exact à copier (vide si mode Precision)",
+  "warnings": "1-2 risques à surveiller"
+}
+
+RÈGLES: valeurs sliders entiers avec signe (+1, -2, 0). Une seule valeur par paramètre. Scale Factor toujours 2x. Creativity défaut entre -3 et -1. JSON valide uniquement.`;
+
+let imageBase64 = null;
+let imageMime = null;
+
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const previewWrap = document.getElementById('preview-wrap');
+const previewImg = document.getElementById('preview-img');
+const removeBtn = document.getElementById('remove-btn');
+const analyzeBtn = document.getElementById('analyze-btn');
+const loader = document.getElementById('loader');
+const resultCard = document.getElementById('result-card');
+const apiKeyInput = document.getElementById('api-key-input');
+
+// Load saved API key
+const savedKey = localStorage.getItem('magnific_api_key');
+if (savedKey) apiKeyInput.value = savedKey;
+apiKeyInput.addEventListener('change', () => {
+  if (apiKeyInput.value.trim()) localStorage.setItem('magnific_api_key', apiKeyInput.value.trim());
+});
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) loadFile(f);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+
+removeBtn.addEventListener('click', () => {
+  imageBase64 = null; imageMime = null;
+  previewWrap.style.display = 'none';
+  analyzeBtn.style.display = 'none';
+  dropZone.style.display = '';
+  resultCard.style.display = 'none';
+  fileInput.value = '';
+});
+
+function loadFile(file) {
+  imageMime = file.type;
+  const reader = new FileReader();
+  reader.onload = e => {
+    imageBase64 = e.target.result.split(',')[1];
+    previewImg.src = e.target.result;
+    previewWrap.style.display = '';
+    dropZone.style.display = 'none';
+    analyzeBtn.style.display = '';
+    analyzeBtn.disabled = false;
+    resultCard.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+analyzeBtn.addEventListener('click', async () => {
+  const apiKey = apiKeyInput.value.trim();
+  if (!apiKey) { alert('Entre ta clé API Anthropic pour continuer.'); apiKeyInput.focus(); return; }
+  if (!imageBase64) return;
+
+  analyzeBtn.disabled = true;
+  loader.style.display = '';
+  resultCard.style.display = 'none';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 1000,
+        system: SYSTEM,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: imageMime, data: imageBase64 } },
+            { type: 'text', text: 'Analyse cette image et donne-moi les paramètres Magnific optimaux en JSON.' }
+          ]
+        }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'Erreur API');
+    }
+
+    const data = await res.json();
+    const raw = data.content.map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    renderResult(parsed);
+
+  } catch (e) {
+    loader.style.display = 'none';
+    analyzeBtn.disabled = false;
+    resultCard.style.display = '';
+    resultCard.innerHTML = `<div class="result-section"><div class="error-box">Erreur : ${e.message}. Vérifie ta clé API.</div></div>`;
+  }
+});
+
+function renderResult(data) {
+  loader.style.display = 'none';
+  analyzeBtn.disabled = false;
+
+  document.getElementById('res-analysis').textContent = data.analysis || '';
+
+  const table = document.getElementById('res-params');
+  table.innerHTML = '';
+  (data.params || []).forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${p.name}</td><td>${p.value}</td><td>${p.reason}</td>`;
+    table.appendChild(tr);
+  });
+
+  const prompt = (data.prompt || '').trim();
+  const promptSection = document.getElementById('prompt-section');
+  if (prompt) {
+    document.getElementById('res-prompt').textContent = prompt;
+    promptSection.style.display = '';
+  } else {
+    promptSection.style.display = 'none';
+  }
+
+  document.getElementById('res-warnings').textContent = data.warnings || '';
+  resultCard.style.display = '';
+}
+
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const p = document.getElementById('res-prompt').textContent;
+  navigator.clipboard.writeText(p).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copié';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copier le prompt'; btn.classList.remove('copied'); }, 1800);
+  });
+});
+</script>
+</body>
+</html>
